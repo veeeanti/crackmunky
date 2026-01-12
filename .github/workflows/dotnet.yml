@@ -20,6 +20,8 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Get BepInEx shit
+      run: dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json
     - name: Restore dependencies
       run: dotnet restore GorillaCrack.csproj
     - name: Build
