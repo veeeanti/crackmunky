@@ -1,6 +1,4 @@
-# This workflow will build a .NET project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
-
+# This workflow builds a BepInEx .NET plugin
 name: .NET
 
 on:
@@ -11,21 +9,29 @@ on:
 
 jobs:
   build:
-
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Setup .NET
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+
+    - name: Install BepInEx templates
+      run: |
+        dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json
+
     - name: Restore dependencies
-      run: dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json && dotnet restore GorillaCrack.csproj
+      run: dotnet restore GorillaCrack.csproj
+
     - name: Build
-      run: dotnet new install BepInEx.Templates::2.0.0-be.4 --nuget-source https://nuget.bepinex.dev/v3/index.json && dotnet build GorillaCrack.csproj
-    - name: upload
-      uses: actions/upload-artifact@v6.0.0
+      run: dotnet build GorillaCrack.csproj -c Release --no-restore
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: GorillaCrack.dll
-        path: bin/Debug/netstandard2.1/GorillaCrack.dll
+        name: GorillaCrack
+        path: bin/Release/netstandard2.1/GorillaCrack.dll
