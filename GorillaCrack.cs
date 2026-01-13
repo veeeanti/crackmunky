@@ -36,7 +36,7 @@ namespace GorillaTagCustomServers
         private void Awake()
         {
             instance = this;
-            // Load configuration from INI
+            // Load configuration from cfg file
             LoadConfig();
 
             // Apply patches
@@ -48,7 +48,7 @@ namespace GorillaTagCustomServers
 
         private void LoadConfig()
         {
-            string configPath = Path.Combine(Paths.ConfigPath, "config.ini");
+            string configPath = Path.Combine(Paths.ConfigPath, "veeanti.union-crax.gorillacrack.cfg");
             if (!File.Exists(configPath))
             {
                 Logger.LogWarning("Config file not found, using defaults");
@@ -138,6 +138,15 @@ namespace GorillaTagCustomServers
         // Steam patches
         [HarmonyPatch(typeof(SteamAPI), "Init", typeof(uint))]
         public class SteamInitPatch
+        {
+            static void Prefix(ref uint appId)
+            {
+                appId = Instance.steamAppId;
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamAPI), "SteamInternal_SteamAPI_Init")]
+        public class SteamInternalInitPatch
         {
             static void Prefix(ref uint appId)
             {
