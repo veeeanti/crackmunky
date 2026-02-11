@@ -7,11 +7,16 @@
     <AssemblyName>GorillaCrack</AssemblyName>
     <RootNamespace>GorillaTagCustomServers</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BepInEx.Core" Version="5.4.21" />
-    <PackageReference Include="HarmonyX" Version="2.10.1" />
+    <Reference Include="BepInEx">
+      <HintPath>BepInEx\core\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>BepInEx\core\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>libs\UnityEngine.CoreModule.dll</HintPath>
     </Reference>
@@ -38,9 +43,6 @@
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>libs\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="MothershipApi">
-      <HintPath>libs\AA.Mothership.dll</HintPath>
     </Reference>
     <!-- Assemblies are available at runtime in the game -->
   </ItemGroup>

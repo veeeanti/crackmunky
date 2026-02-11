@@ -1,7 +1,6 @@
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using static MothershipApi;
 using Photon.Pun;
 using Photon.Realtime;
 using PlayFab;
@@ -15,22 +14,16 @@ using UnityEngine;
 
 namespace GorillaTagCustomServers
 {
-    [BepInPlugin("veeanti.union-crax.gorillacrack", "Let Your Gorilla Smoke A Little Crack", "1.0.0.0")]
+    [BepInPlugin("veeanti.union-crax.gorillacrack", "Let that munky smonk some crAck!!", "1.0.0.1")]
     public class CustomServersPlugin : BaseUnityPlugin
     {
         private static CustomServersPlugin instance;
 
         private string photonRealtimeAppId;
-        private string photonFusionAppId;
         private string photonPunAppId;
-        private string photonVoiceAppId;
-        private string photonQuantumAppId;
-        private string photonFunAppId;
-        private string photonChatAppId;
         private string photonRegion;
         private string playfabTitleId;
-        private string playfabUrl;
-        private string mothershipUrl;
+        private string playfabPlayFabUrl;
         private uint steamAppId;
 
         private void Awake()
@@ -38,6 +31,9 @@ namespace GorillaTagCustomServers
             instance = this;
             // Load configuration from cfg file
             LoadConfig();
+
+            // Set static values
+            PlayFabSettings.TitleId = playfabTitleId;
 
             // Apply patches
             var harmony = new Harmony("veeanti.union-crax.gorillacrack");
@@ -48,21 +44,15 @@ namespace GorillaTagCustomServers
 
         private void LoadConfig()
         {
-            string configPath = Path.Combine(Paths.ConfigPath, "veeanti.union-crax.gorillacrack.cfg");
+            string configPath = Path.Combine(Paths.GameRootPath, "union-crax.ini");
             if (!File.Exists(configPath))
             {
                 Logger.LogWarning("Config file not found, using defaults");
-                photonRealtimeAppId = "your-realtime-app-id";
-                photonFusionAppId = "your-fusion-app-id";
-                photonPunAppId = "your-pun-app-id";
-                photonVoiceAppId = "your-voice-app-id";
-                photonQuantumAppId = "your-quantum-app-id";
-                photonFunAppId = "your-fun-app-id";
-                photonChatAppId = "your-chat-app-id";
+                photonRealtimeAppId = "fa353756-050a-42db-bf0c-88a2d29b4ef5";
+                photonPunAppId = "0f184139-4851-45d1-a250-9f062cdf121c";
                 photonRegion = "us";
-                playfabTitleId = "your-custom-playfab-title-id";
-                playfabUrl = "https://your-custom-playfab-url.playfabapi.com";
-                mothershipUrl = "https://your-custom-mothership-url.com";
+                playfabTitleId = "16F775";
+                playfabPlayFabUrl = "https://16F775.playfabapi.com";
                 steamAppId = 480;
                 return;
             }
@@ -88,17 +78,11 @@ namespace GorillaTagCustomServers
                 }
             }
 
-            photonRealtimeAppId = GetConfigValue(config, "Photon", "RealtimeAppId", "your-realtime-app-id");
-            photonFusionAppId = GetConfigValue(config, "Photon", "FusionAppId", "your-fusion-app-id");
-            photonPunAppId = GetConfigValue(config, "Photon", "PunAppId", "your-pun-app-id");
-            photonVoiceAppId = GetConfigValue(config, "Photon", "VoiceAppId", "your-voice-app-id");
-            photonQuantumAppId = GetConfigValue(config, "Photon", "QuantumAppId", "your-quantum-app-id");
-            photonFunAppId = GetConfigValue(config, "Photon", "FunAppId", "your-fun-app-id");
-            photonChatAppId = GetConfigValue(config, "Photon", "ChatAppId", "your-chat-app-id");
-            photonRegion = GetConfigValue(config, "Photon", "Region", "us");
-            playfabTitleId = GetConfigValue(config, "PlayFab", "TitleId", "your-custom-playfab-title-id");
-            playfabUrl = GetConfigValue(config, "PlayFab", "Url", "https://your-custom-playfab-url.playfabapi.com");
-            mothershipUrl = GetConfigValue(config, "Mothership", "BaseUrl", "https://your-custom-mothership-url.com");
+            photonRealtimeAppId = GetConfigValue(config, "Photon", "RealtimeAppId", "");
+            photonPunAppId = GetConfigValue(config, "Photon", "PunAppId", "");
+            photonRegion = GetConfigValue(config, "Photon", "Region", "");
+            playfabTitleId = GetConfigValue(config, "PlayFab", "TitleId", "");
+            playfabPlayFabUrl = GetConfigValue(config, "PlayFab", "PlayFabUrl", "");
             steamAppId = uint.TryParse(GetConfigValue(config, "Steam", "AppId", "480"), out uint appId) ? appId : 480;
         }
 
@@ -151,6 +135,30 @@ namespace GorillaTagCustomServers
             static void Prefix(ref uint appId)
             {
                 appId = Instance.steamAppId;
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamUtils), "GetAppID")]
+        public class SteamGetAppIDPatch
+        {
+            static bool Prefix(ref uint __result)
+            {
+                __result = Instance.steamAppId;
+                return false; // Skip original
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamApps), "BIsSubscribedApp", typeof(uint))]
+        public class SteamBIsSubscribedAppPatch
+        {
+            static bool Prefix(uint appId, ref bool __result)
+            {
+                if (appId == Instance.steamAppId)
+                {
+                    __result = true;
+                    return false; // Skip original
+                }
+                return true; // Call original for other apps
             }
         }
 
