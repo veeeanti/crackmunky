@@ -35,6 +35,11 @@ namespace GorillaTagCustomServers
             // Set static values
             PlayFabSettings.TitleId = playfabTitleId;
 
+            // Spoof steam_appid.txt to force Spacewar recognition
+            string steamAppIdFile = Path.Combine(Paths.GameRootPath, "steam_appid.txt");
+            File.WriteAllText(steamAppIdFile, steamAppId.ToString());
+            Logger.LogInfo($"Spoofed steam_appid.txt to {steamAppId}");
+
             // Apply patches
             var harmony = new Harmony("veeanti.union-crax.gorillacrack");
             harmony.PatchAll(Assembly.GetExecutingAssembly());
@@ -125,7 +130,7 @@ namespace GorillaTagCustomServers
         {
             static void Prefix(ref uint appId)
             {
-                appId = Instance.steamAppId;
+                if (appId == 1533390 || appId == 0) appId = Instance.steamAppId;
             }
         }
 
@@ -134,7 +139,7 @@ namespace GorillaTagCustomServers
         {
             static void Prefix(ref uint appId)
             {
-                appId = Instance.steamAppId;
+                if (appId == 1533390 || appId == 0) appId = Instance.steamAppId;
             }
         }
 
@@ -158,7 +163,48 @@ namespace GorillaTagCustomServers
                     __result = true;
                     return false; // Skip original
                 }
+                if (appId == 1533390)
+                {
+                    __result = false;
+                    return false;
+                }
                 return true; // Call original for other apps
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamApps), "BIsAppInstalled", typeof(uint))]
+        public class SteamBIsAppInstalledPatch
+        {
+            static void Prefix(ref uint appId)
+            {
+                if (appId == 1533390) appId = Instance.steamAppId;
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamApps), "GetAppInstallDir", typeof(uint), typeof(System.Text.StringBuilder), typeof(uint))]
+        public class SteamGetAppInstallDirPatch
+        {
+            static void Prefix(ref uint appId)
+            {
+                if (appId == 1533390) appId = Instance.steamAppId;
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamAPI), "RestartAppIfNecessary", typeof(uint))]
+        public class SteamRestartAppIfNecessaryPatch
+        {
+            static void Prefix(ref uint appId)
+            {
+                if (appId == 1533390) appId = Instance.steamAppId;
+            }
+        }
+
+        [HarmonyPatch(typeof(SteamApps), "BIsDlcInstalled", typeof(uint), typeof(uint))]
+        public class SteamBIsDlcInstalledPatch
+        {
+            static void Prefix(ref uint appId)
+            {
+                if (appId == 1533390) appId = Instance.steamAppId;
             }
         }
 
